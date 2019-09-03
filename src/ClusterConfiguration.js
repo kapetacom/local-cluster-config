@@ -4,9 +4,12 @@ const FS = require('fs');
 const YAML = require('yaml');
 
 const BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE = ".blockware/cluster-service.yml";
+
 const BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT = "35100";
 
 const USER_HOMEDIR = OS.homedir();
+
+const BLOCKWARE_DIR = Path.join(USER_HOMEDIR, '.blockware');
 const CLUSTER_CONFIG_FILE = Path.join(USER_HOMEDIR, BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE);
 
 class ClusterConfiguration {
@@ -18,13 +21,18 @@ class ClusterConfiguration {
         return this.getClusterConfig().cluster.port;
     }
 
+    getBlockwareBasedir() {
+        return BLOCKWARE_DIR;
+    }
+
+    getClusterConfigFile() {
+        return CLUSTER_CONFIG_FILE;
+    }
+
     getClusterConfig() {
         if (this._clusterConfig != null) {
             return this._clusterConfig;
         }
-
-        const userHomeDir = OS.homedir();
-
 
 
         this._clusterConfig = {};
