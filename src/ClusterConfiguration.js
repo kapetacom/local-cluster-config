@@ -51,7 +51,7 @@ class ClusterConfiguration {
             this._clusterConfig.cluster.port = BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT;
         }
 
-        console.log('Read cluster config from file: %s', configFile);
+        console.log('Read cluster config from file: %s', CLUSTER_CONFIG_FILE);
 
         return this._clusterConfig;
     }
