@@ -1,0 +1,21 @@
+{
+  "name": "@blockware/cluster-config",
+  "version": "0.0.1",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blockwarecom/node-cluster-config.git"
+  },
+  "keywords": [
+    "blockware"
+  ],
+  "author": "Henrik Hofmeister <hh@blockware.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/blockwarecom/node-cluster-config/issues"
+  },
+  "homepage": "https://github.com/blockwarecom/node-cluster-config#readme",
+  "dependencies": {
+    "yaml": "1.6.0"
+  }
+}
