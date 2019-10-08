@@ -6,7 +6,7 @@ Node library for getting cluster configuration
 
 ````javascript
 const request = require('request');
-const ClusterConfiguration = require('@blockware/cluster-config');
+const ClusterConfiguration = require('@blockware/local-cluster-config');
 
 //Gets the address of the cluster service - e.g. "http://localhost:30500"
 const clusterAddress = ClusterConfiguration.getClusterServiceAddress();
