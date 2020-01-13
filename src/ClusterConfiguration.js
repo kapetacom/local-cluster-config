@@ -11,6 +11,7 @@ const USER_HOMEDIR = OS.homedir();
 
 const BLOCKWARE_DIR = Path.join(USER_HOMEDIR, '.blockware');
 const CLUSTER_CONFIG_FILE = Path.join(USER_HOMEDIR, BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE);
+const PROVIDERS_DIR = Path.join(BLOCKWARE_DIR, 'providers');
 
 class ClusterConfiguration {
     constructor() {
@@ -23,6 +24,10 @@ class ClusterConfiguration {
 
     getBlockwareBasedir() {
         return BLOCKWARE_DIR;
+    }
+
+    getProvidersBasedir() {
+        return PROVIDERS_DIR;
     }
 
     getClusterConfigFile() {
