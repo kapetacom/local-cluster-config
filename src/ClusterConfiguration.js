@@ -2,6 +2,7 @@ const OS = require('os');
 const Path = require('path');
 const FS = require('fs');
 const YAML = require('yaml');
+const Glob = require('glob');
 
 const BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE = ".blockware/cluster-service.yml";
 
@@ -38,50 +39,42 @@ class ClusterConfiguration {
      * Gets an array of all provider definitions along with their paths
      *
      * @param [kind] {string} if provided will only return definitions of this kind
-     * @return {{path:string,definition:{}}[]}
+     * @return {{ymlPath:string,path:string,hasWeb:boolean,definition:{}}[]}
      */
     getProviderDefinitions(kind) {
         if (!FS.existsSync(this.getProvidersBasedir())) {
             return [];
         }
 
-        const providerFolders = FS.readdirSync(this.getProvidersBasedir());
+        const providerYmlFiles = Glob.sync('**/@(blockware.yaml|blockware.yml)', {cwd: this.getProvidersBasedir()});
 
-        return providerFolders
+        const lists = providerYmlFiles
             .map((folder) => Path.join(this.getProvidersBasedir(), folder))
-            .map((path) => {
-                const ymlPath = Path.join(path, 'blockware.yml');
-                const yamlPath = Path.join(path, 'blockware.yml');
-
-                let realPath = ymlPath;
-                let exists = false;
-                if (FS.existsSync(ymlPath)) {
-                    exists = true
-                } else if (FS.existsSync(yamlPath)) {
-                    exists = true;
-                    realPath = yamlPath
-                }
+            .map((ymlPath) => {
 
                 return {
-                    path,
-                    ymlPath: realPath,
-                    exists
+                    path: Path.dirname(ymlPath),
+                    ymlPath
                 };
             })
-            .filter((obj) => obj.exists)
             .map((obj) => {
                 const raw = FS.readFileSync(obj.ymlPath).toString();
                 return YAML.parseAllDocuments(raw).map((doc) => doc.toJSON()).map((data) => {
                     return {
                         ymlPath: obj.ymlPath,
                         path: obj.path,
-                        definition: data
+                        definition: data,
+                        hasWeb: FS.existsSync(Path.join(obj.path, 'web'))
                     };
                 });
-            })
-            .reduce((prev, current) => {
-                return prev.concat(current)
-            })
+            });
+
+        let definitions = [];
+        lists.forEach((list) => {
+            definitions = definitions.concat(list);
+        });
+
+        return definitions
             .filter((out) => {
                 if (kind) {
                     return out.definition.kind && out.definition.kind.toLowerCase() === kind.toLowerCase();

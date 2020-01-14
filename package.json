@@ -16,6 +16,7 @@
   },
   "homepage": "https://github.com/blockwarecom/node-cluster-config#readme",
   "dependencies": {
+    "glob": "^7.1.6",
     "yaml": "1.6.0"
   }
 }
