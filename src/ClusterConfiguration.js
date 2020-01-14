@@ -26,8 +26,69 @@ class ClusterConfiguration {
         return BLOCKWARE_DIR;
     }
 
+    /**
+     * Gets the base directory of a provider
+     * @return {string}
+     */
     getProvidersBasedir() {
         return PROVIDERS_DIR;
+    }
+
+    /**
+     * Gets an array of all provider definitions along with their paths
+     *
+     * @param [kind] {string} if provided will only return definitions of this kind
+     * @return {{path:string,definition:{}}[]}
+     */
+    getProviderDefinitions(kind) {
+        if (!FS.existsSync(this.getProvidersBasedir())) {
+            return [];
+        }
+
+        const providerFolders = FS.readdirSync(this.getProvidersBasedir());
+
+        return providerFolders
+            .map((folder) => Path.join(this.getProvidersBasedir(), folder))
+            .map((path) => {
+                const ymlPath = Path.join(path, 'blockware.yml');
+                const yamlPath = Path.join(path, 'blockware.yml');
+
+                let realPath = ymlPath;
+                let exists = false;
+                if (FS.existsSync(ymlPath)) {
+                    exists = true
+                } else if (FS.existsSync(yamlPath)) {
+                    exists = true;
+                    realPath = yamlPath
+                }
+
+                return {
+                    path,
+                    ymlPath: realPath,
+                    exists
+                };
+            })
+            .filter((obj) => obj.exists)
+            .map((obj) => {
+                const raw = FS.readFileSync(obj.ymlPath).toString();
+                return YAML.parseAllDocuments(raw).map((doc) => doc.toJSON()).map((data) => {
+                    return {
+                        ymlPath: obj.ymlPath,
+                        path: obj.path,
+                        definition: data
+                    };
+                });
+            })
+            .reduce((prev, current) => {
+                return prev.concat(current)
+            })
+            .filter((out) => {
+                if (kind) {
+                    return out.definition.kind && out.definition.kind.toLowerCase() === kind.toLowerCase();
+                }
+
+                return !!out.definition.kind;
+            });
     }
 
     getClusterConfigFile() {
