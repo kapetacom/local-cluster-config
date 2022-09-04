@@ -8,6 +8,8 @@ const BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE = ".blockware/cluster-service.yml";
 
 const BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT = "35100";
 
+const BLOCKWARE_CLUSTER_SERVICE_DEFAULT_HOST = "127.0.0.1"; //Be specific about IPv4
+
 const USER_HOMEDIR = OS.homedir();
 
 const BLOCKWARE_DIR = Path.join(USER_HOMEDIR, '.blockware');
@@ -21,6 +23,10 @@ class ClusterConfiguration {
 
     getClusterServicePort() {
         return this.getClusterConfig().cluster.port;
+    }
+
+    getClusterServiceHost() {
+        return this.getClusterConfig().cluster.host;
     }
 
     getBlockwareBasedir() {
@@ -110,6 +116,10 @@ class ClusterConfiguration {
             this._clusterConfig.cluster.port = BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT;
         }
 
+        if (!this._clusterConfig.cluster.host) {
+            this._clusterConfig.cluster.host = BLOCKWARE_CLUSTER_SERVICE_DEFAULT_HOST;
+        }
+
         console.log('Read cluster config from file: %s', CLUSTER_CONFIG_FILE);
 
         return this._clusterConfig;
@@ -117,8 +127,8 @@ class ClusterConfiguration {
 
     getClusterServiceAddress() {
         const clusterPort = this.getClusterServicePort();
-
-        return 'http://localhost:' + clusterPort;
+        const host = this.getClusterServiceHost();
+        return `http://${host}:${clusterPort}`;
     }
 }
 
