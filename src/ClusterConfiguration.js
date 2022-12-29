@@ -45,7 +45,7 @@ class ClusterConfiguration {
      * Gets an array of all provider definitions along with their paths
      *
      * @param [kind] {string} if provided will only return definitions of this kind
-     * @return {{ymlPath:string,path:string,hasWeb:boolean,definition:{}}[]}
+     * @return {{ymlPath:string,path:string,version:string,hasWeb:boolean,definition:{}}[]}
      */
     getProviderDefinitions(kind) {
         if (!FS.existsSync(this.getProvidersBasedir())) {
@@ -57,7 +57,6 @@ class ClusterConfiguration {
         const lists = providerYmlFiles
             .map((folder) => Path.join(this.getProvidersBasedir(), folder))
             .map((ymlPath) => {
-
                 return {
                     path: Path.dirname(ymlPath),
                     ymlPath
@@ -65,10 +64,17 @@ class ClusterConfiguration {
             })
             .map((obj) => {
                 const raw = FS.readFileSync(obj.ymlPath).toString();
+                let version = 'local';
+                const versionInfoFile = Path.join(obj.path, 'blockware.version.yml');
+                if (FS.existsSync(versionInfoFile)) {
+                    version = YAML.parse(FS.readFileSync(versionInfoFile).toString()).version;
+                }
+
                 return YAML.parseAllDocuments(raw).map((doc) => doc.toJSON()).map((data) => {
                     return {
                         ymlPath: obj.ymlPath,
                         path: obj.path,
+                        version,
                         definition: data,
                         hasWeb: FS.existsSync(Path.join(obj.path, 'web'))
                     };
