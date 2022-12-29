@@ -23,5 +23,6 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
       - run: npm install
+      - run: echo '@blockware:registry=${{ secrets.GCP_ARTIFACT_NPM_URL }}' > .npmrc
       - run: npx google-artifactregistry-auth .npmrc
       - run: npm publish --registry ${{ secrets.GCP_ARTIFACT_NPM_URL }}
