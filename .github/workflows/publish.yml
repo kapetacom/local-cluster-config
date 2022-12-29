@@ -12,11 +12,15 @@ jobs:
         with:
           node-version: 18
           registry-url: ${{ secrets.GCP_ARTIFACT_NPM_URL }}
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_ARTIFACTORY_SERVICE_ACCOUNT }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_ARTIFACTORY_SERVICE_ACCOUNT }}
-          export_default_credentials: true
       - run: npm install
       - run: npm publish
