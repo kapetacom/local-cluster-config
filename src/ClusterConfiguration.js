@@ -14,7 +14,16 @@ const USER_HOMEDIR = OS.homedir();
 
 const BLOCKWARE_DIR = Path.join(USER_HOMEDIR, '.blockware');
 const CLUSTER_CONFIG_FILE = Path.join(USER_HOMEDIR, BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE);
-const PROVIDERS_DIR = Path.join(BLOCKWARE_DIR, 'providers');
+const REPOSITORY_DIR = Path.join(BLOCKWARE_DIR, 'repository');
+
+const PROVIDER_TYPES = [
+    'core/block-type',
+    'core/resource-type-extension',
+    'core/resource-type-internal',
+    'core/resource-type-operator',
+    'core/language-target',
+    'core/deployment-target',
+];
 
 class ClusterConfiguration {
     constructor() {
@@ -37,25 +46,64 @@ class ClusterConfiguration {
      * Gets the base directory of a provider
      * @return {string}
      */
-    getProvidersBasedir() {
-        return PROVIDERS_DIR;
+    getRepositoryBasedir() {
+        return REPOSITORY_DIR;
+    }
+
+    getRepositoryAssetPath(handle, name, version) {
+        return Path.join(this.getRepositoryBasedir(), handle, name, version);
+    }
+
+    getRepositoryAssetInfoPath(handle, name, version) {
+        const assetBase = this.getRepositoryAssetPath(handle, name, version);
+        const base = Path.join(this.getRepositoryAssetPath(handle, name, version), '.blockware');
+
+        return {
+            baseDir: base,
+            assetFile: Path.join(assetBase, 'blockware.yml'),
+            versionFile: Path.join(base, 'version.yml'),
+        };
     }
 
     /**
      * Gets an array of all provider definitions along with their paths
      *
-     * @param [kind] {string} if provided will only return definitions of this kind
+     * @param [kindFilter] {string|string[]} if provided will only return definitions of this kind
      * @return {{ymlPath:string,path:string,version:string,hasWeb:boolean,definition:{}}[]}
      */
-    getProviderDefinitions(kind) {
-        if (!FS.existsSync(this.getProvidersBasedir())) {
+    getProviderDefinitions(kindFilter) {
+        if (!kindFilter) {
+            kindFilter = [
+                ...PROVIDER_TYPES
+            ]
+        }
+        return this.getDefinitions(kindFilter)
+    }
+
+    /**
+     * Gets an array of all definitions along with their paths from the local repository
+     *
+     * @param [kindFilter] {string|string[]} if provided will only return definitions of this kind
+     * @return {{ymlPath:string,path:string,version:string,hasWeb:boolean,definition:{}}[]}
+     */
+    getDefinitions(kindFilter) {
+        if (!FS.existsSync(this.getRepositoryBasedir())) {
             return [];
         }
 
-        const providerYmlFiles = Glob.sync('**/@(blockware.yaml|blockware.yml)', {cwd: this.getProvidersBasedir()});
+        if (kindFilter &&
+            !Array.isArray(kindFilter)) {
+            kindFilter = [kindFilter];
+        }
 
-        const lists = providerYmlFiles
-            .map((folder) => Path.join(this.getProvidersBasedir(), folder))
+        if (kindFilter) {
+            kindFilter = kindFilter.map(k => k.toLowerCase());
+        }
+
+        const ymlFiles = Glob.sync('**/@(blockware.yml)', {cwd: this.getRepositoryBasedir()});
+
+        const lists = ymlFiles
+            .map((folder) => Path.join(this.getRepositoryBasedir(), folder))
             .map((ymlPath) => {
                 return {
                     path: Path.dirname(ymlPath),
@@ -65,7 +113,7 @@ class ClusterConfiguration {
             .map((obj) => {
                 const raw = FS.readFileSync(obj.ymlPath).toString();
                 let version = 'local';
-                const versionInfoFile = Path.join(obj.path, 'blockware.version.yml');
+                const versionInfoFile = Path.join(obj.path, '.blockware','version.yml');
                 if (FS.existsSync(versionInfoFile)) {
                     version = YAML.parse(FS.readFileSync(versionInfoFile).toString()).version;
                 }
@@ -88,8 +136,8 @@ class ClusterConfiguration {
 
         return definitions
             .filter((out) => {
-                if (kind) {
-                    return out.definition.kind && out.definition.kind.toLowerCase() === kind.toLowerCase();
+                if (kindFilter) {
+                    return out.definition.kind && kindFilter.indexOf(out.definition.kind.toLowerCase()) > -1;
                 }
 
                 return !!out.definition.kind;
