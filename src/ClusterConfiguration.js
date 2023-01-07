@@ -16,6 +16,10 @@ const BLOCKWARE_DIR = Path.join(USER_HOMEDIR, '.blockware');
 const CLUSTER_CONFIG_FILE = Path.join(USER_HOMEDIR, BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE);
 const REPOSITORY_DIR = Path.join(BLOCKWARE_DIR, 'repository');
 
+const AUTH_TOKEN_PATH = process?.env?.BLOCKWARE_CREDENTIALS ?
+    process.env.BLOCKWARE_CREDENTIALS :
+    Path.join(BLOCKWARE_DIR, 'authentication.json');
+
 const PROVIDER_TYPES = [
     'core/block-type',
     'core/resource-type-extension',
@@ -40,6 +44,10 @@ class ClusterConfiguration {
 
     getBlockwareBasedir() {
         return BLOCKWARE_DIR;
+    }
+
+    getAuthenticationPath() {
+        return AUTH_TOKEN_PATH;
     }
 
     /**
