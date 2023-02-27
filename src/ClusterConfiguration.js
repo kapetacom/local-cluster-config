@@ -4,16 +4,16 @@ const FS = require('fs');
 const YAML = require('yaml');
 const Glob = require('glob');
 
-const BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE = ".blockware/cluster-service.yml";
+const BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE = "cluster-service.yml";
 
 const BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT = "35100";
 
 const BLOCKWARE_CLUSTER_SERVICE_DEFAULT_HOST = "127.0.0.1"; //Be specific about IPv4
 
-const USER_HOMEDIR = OS.homedir();
+const BLOCKWARE_DIR = process?.env?.BLOCKWARE_HOME ?? Path.join(OS.homedir(), '.blockware');
 
-const BLOCKWARE_DIR = Path.join(USER_HOMEDIR, '.blockware');
-const CLUSTER_CONFIG_FILE = Path.join(USER_HOMEDIR, BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE);
+const CLUSTER_CONFIG_FILE = Path.join(BLOCKWARE_DIR, BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE);
+
 const REPOSITORY_DIR = Path.join(BLOCKWARE_DIR, 'repository');
 
 const AUTH_TOKEN_PATH = process?.env?.BLOCKWARE_CREDENTIALS ?
