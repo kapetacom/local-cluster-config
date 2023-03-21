@@ -1,15 +1,15 @@
 {
-  "name": "@blockware/local-cluster-config",
-  "version": "0.0.17",
+  "name": "@kapeta/local-cluster-config",
+  "version": "0.0.18",
   "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/blockwarecom/node-cluster-config.git"
   },
   "keywords": [
-    "blockware"
+    "kapeta"
   ],
-  "author": "Henrik Hofmeister <hh@blockware.com>",
+  "author": "Henrik Hofmeister <hh@kapeta.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/blockwarecom/node-cluster-config/issues"
