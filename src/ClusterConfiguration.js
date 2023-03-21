@@ -4,21 +4,21 @@ const FS = require('fs');
 const YAML = require('yaml');
 const Glob = require('glob');
 
-const BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE = "cluster-service.yml";
+const KAPETA_CLUSTER_SERVICE_CONFIG_FILE = "cluster-service.yml";
 
-const BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT = "35100";
+const KAPETA_CLUSTER_SERVICE_DEFAULT_PORT = "35100";
 
-const BLOCKWARE_CLUSTER_SERVICE_DEFAULT_HOST = "127.0.0.1"; //Be specific about IPv4
+const KAPETA_CLUSTER_SERVICE_DEFAULT_HOST = "127.0.0.1"; //Be specific about IPv4
 
-const BLOCKWARE_DIR = process?.env?.BLOCKWARE_HOME ?? Path.join(OS.homedir(), '.blockware');
+const KAPETA_DIR = process?.env?.KAPETA_HOME ?? Path.join(OS.homedir(), '.kapeta');
 
-const CLUSTER_CONFIG_FILE = Path.join(BLOCKWARE_DIR, BLOCKWARE_CLUSTER_SERVICE_CONFIG_FILE);
+const CLUSTER_CONFIG_FILE = Path.join(KAPETA_DIR, KAPETA_CLUSTER_SERVICE_CONFIG_FILE);
 
-const REPOSITORY_DIR = Path.join(BLOCKWARE_DIR, 'repository');
+const REPOSITORY_DIR = Path.join(KAPETA_DIR, 'repository');
 
-const AUTH_TOKEN_PATH = process?.env?.BLOCKWARE_CREDENTIALS ?
-    process.env.BLOCKWARE_CREDENTIALS :
-    Path.join(BLOCKWARE_DIR, 'authentication.json');
+const AUTH_TOKEN_PATH = process?.env?.KAPETA_CREDENTIALS ?
+    process.env.KAPETA_CREDENTIALS :
+    Path.join(KAPETA_DIR, 'authentication.json');
 
 const PROVIDER_TYPES = [
     'core/block-type',
@@ -42,8 +42,8 @@ class ClusterConfiguration {
         return this.getClusterConfig().cluster.host;
     }
 
-    getBlockwareBasedir() {
-        return BLOCKWARE_DIR;
+    getKapetaBasedir() {
+        return KAPETA_DIR;
     }
 
     getAuthenticationPath() {
@@ -64,11 +64,11 @@ class ClusterConfiguration {
 
     getRepositoryAssetInfoPath(handle, name, version) {
         const assetBase = this.getRepositoryAssetPath(handle, name, version);
-        const base = Path.join(this.getRepositoryAssetPath(handle, name, version), '.blockware');
+        const base = Path.join(this.getRepositoryAssetPath(handle, name, version), '.kapeta');
 
         return {
             baseDir: base,
-            assetFile: Path.join(assetBase, 'blockware.yml'),
+            assetFile: Path.join(assetBase, 'kapeta.yml'),
             versionFile: Path.join(base, 'version.yml'),
         };
     }
@@ -108,7 +108,7 @@ class ClusterConfiguration {
             kindFilter = kindFilter.map(k => k.toLowerCase());
         }
 
-        const ymlFiles = Glob.sync('**/@(blockware.yml)', {cwd: this.getRepositoryBasedir()});
+        const ymlFiles = Glob.sync('**/@(kapeta.yml)', {cwd: this.getRepositoryBasedir()});
 
         const lists = ymlFiles
             .map((folder) => Path.join(this.getRepositoryBasedir(), folder))
@@ -121,7 +121,7 @@ class ClusterConfiguration {
             .map((obj) => {
                 const raw = FS.readFileSync(obj.ymlPath).toString();
                 let version = 'local';
-                const versionInfoFile = Path.join(obj.path, '.blockware','version.yml');
+                const versionInfoFile = Path.join(obj.path, '.kapeta','version.yml');
                 if (FS.existsSync(versionInfoFile)) {
                     version = YAML.parse(FS.readFileSync(versionInfoFile).toString()).version;
                 }
@@ -175,11 +175,11 @@ class ClusterConfiguration {
         }
 
         if (!this._clusterConfig.cluster.port) {
-            this._clusterConfig.cluster.port = BLOCKWARE_CLUSTER_SERVICE_DEFAULT_PORT;
+            this._clusterConfig.cluster.port = KAPETA_CLUSTER_SERVICE_DEFAULT_PORT;
         }
 
         if (!this._clusterConfig.cluster.host) {
-            this._clusterConfig.cluster.host = BLOCKWARE_CLUSTER_SERVICE_DEFAULT_HOST;
+            this._clusterConfig.cluster.host = KAPETA_CLUSTER_SERVICE_DEFAULT_HOST;
         }
 
         console.log('Read cluster config from file: %s', CLUSTER_CONFIG_FILE);
