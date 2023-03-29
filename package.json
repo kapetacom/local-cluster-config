@@ -4,7 +4,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/blockwarecom/node-cluster-config.git"
+    "url": "git+https://github.com/kapetacom/node-cluster-config.git"
   },
   "keywords": [
     "kapeta"
@@ -12,9 +12,9 @@
   "author": "Henrik Hofmeister <hh@kapeta.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/blockwarecom/node-cluster-config/issues"
+    "url": "https://github.com/kapetacom/node-cluster-config/issues"
   },
-  "homepage": "https://github.com/blockwarecom/node-cluster-config#readme",
+  "homepage": "https://github.com/kapetacom/node-cluster-config#readme",
   "dependencies": {
     "glob": "^7.1.6",
     "yaml": "1.6.0"
