@@ -22,6 +22,7 @@ const AUTH_TOKEN_PATH = process?.env?.KAPETA_CREDENTIALS ?
 
 const PROVIDER_TYPES = [
     'core/block-type',
+    'core/block-type-operator',
     'core/resource-type-extension',
     'core/resource-type-internal',
     'core/resource-type-operator',
@@ -35,10 +36,16 @@ class ClusterConfiguration {
     }
 
     getClusterServicePort() {
+        if (process?.env?.KAPETA_LOCAL_CLUSTER_PORT) {
+            return process.env.KAPETA_LOCAL_CLUSTER_PORT;
+        }
         return this.getClusterConfig().cluster.port;
     }
 
     getClusterServiceHost() {
+        if (process?.env?.KAPETA_LOCAL_CLUSTER_HOST) {
+            return process.env.KAPETA_LOCAL_CLUSTER_HOST;
+        }
         return this.getClusterConfig().cluster.host;
     }
 
@@ -160,7 +167,6 @@ class ClusterConfiguration {
         if (this._clusterConfig != null) {
             return this._clusterConfig;
         }
-
 
         this._clusterConfig = {};
 
