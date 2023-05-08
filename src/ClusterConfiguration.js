@@ -4,21 +4,25 @@ const FS = require('fs');
 const YAML = require('yaml');
 const Glob = require('glob');
 
-const KAPETA_CLUSTER_SERVICE_CONFIG_FILE = "cluster-service.yml";
+const KAPETA_CLUSTER_SERVICE_CONFIG_FILE = 'cluster-service.yml';
 
-const KAPETA_CLUSTER_SERVICE_DEFAULT_PORT = "35100";
+const KAPETA_CLUSTER_SERVICE_DEFAULT_PORT = '35100';
 
-const KAPETA_CLUSTER_SERVICE_DEFAULT_HOST = "127.0.0.1"; //Be specific about IPv4
+const KAPETA_CLUSTER_SERVICE_DEFAULT_HOST = '127.0.0.1'; //Be specific about IPv4
 
-const KAPETA_DIR = process?.env?.KAPETA_HOME ?? Path.join(OS.homedir(), '.kapeta');
+const KAPETA_DIR =
+    process?.env?.KAPETA_HOME ?? Path.join(OS.homedir(), '.kapeta');
 
-const CLUSTER_CONFIG_FILE = Path.join(KAPETA_DIR, KAPETA_CLUSTER_SERVICE_CONFIG_FILE);
+const CLUSTER_CONFIG_FILE = Path.join(
+    KAPETA_DIR,
+    KAPETA_CLUSTER_SERVICE_CONFIG_FILE
+);
 
 const REPOSITORY_DIR = Path.join(KAPETA_DIR, 'repository');
 
-const AUTH_TOKEN_PATH = process?.env?.KAPETA_CREDENTIALS ?
-    process.env.KAPETA_CREDENTIALS :
-    Path.join(KAPETA_DIR, 'authentication.json');
+const AUTH_TOKEN_PATH = process?.env?.KAPETA_CREDENTIALS
+    ? process.env.KAPETA_CREDENTIALS
+    : Path.join(KAPETA_DIR, 'authentication.json');
 
 const PROVIDER_TYPES = [
     'core/block-type',
@@ -47,6 +51,15 @@ class ClusterConfiguration {
             return process.env.KAPETA_LOCAL_CLUSTER_HOST;
         }
         return this.getClusterConfig().cluster.host;
+    }
+
+    /**
+     * User configured docker connection information
+     *
+     * @returns {{socketPath: string} | {protocol?: string, host?: string, port?: number}}
+     */
+    getDockerConfig() {
+        return this.getClusterConfig().docker;
     }
 
     getKapetaBasedir() {
@@ -88,11 +101,9 @@ class ClusterConfiguration {
      */
     getProviderDefinitions(kindFilter) {
         if (!kindFilter) {
-            kindFilter = [
-                ...PROVIDER_TYPES
-            ]
+            kindFilter = [...PROVIDER_TYPES];
         }
-        return this.getDefinitions(kindFilter)
+        return this.getDefinitions(kindFilter);
     }
 
     /**
@@ -106,42 +117,51 @@ class ClusterConfiguration {
             return [];
         }
 
-        if (kindFilter &&
-            !Array.isArray(kindFilter)) {
+        if (kindFilter && !Array.isArray(kindFilter)) {
             kindFilter = [kindFilter];
         }
 
         if (kindFilter) {
-            kindFilter = kindFilter.map(k => k.toLowerCase());
+            kindFilter = kindFilter.map((k) => k.toLowerCase());
         }
 
-        const ymlFiles = Glob.sync('**/@(kapeta.yml)', {cwd: this.getRepositoryBasedir()});
+        const ymlFiles = Glob.sync('**/@(kapeta.yml)', {
+            cwd: this.getRepositoryBasedir(),
+        });
 
         const lists = ymlFiles
             .map((folder) => Path.join(this.getRepositoryBasedir(), folder))
             .map((ymlPath) => {
                 return {
                     path: Path.dirname(ymlPath),
-                    ymlPath
+                    ymlPath,
                 };
             })
             .map((obj) => {
                 const raw = FS.readFileSync(obj.ymlPath).toString();
                 let version = 'local';
-                const versionInfoFile = Path.join(obj.path, '.kapeta','version.yml');
+                const versionInfoFile = Path.join(
+                    obj.path,
+                    '.kapeta',
+                    'version.yml'
+                );
                 if (FS.existsSync(versionInfoFile)) {
-                    version = YAML.parse(FS.readFileSync(versionInfoFile).toString()).version;
+                    version = YAML.parse(
+                        FS.readFileSync(versionInfoFile).toString()
+                    ).version;
                 }
 
-                return YAML.parseAllDocuments(raw).map((doc) => doc.toJSON()).map((data) => {
-                    return {
-                        ymlPath: obj.ymlPath,
-                        path: obj.path,
-                        version,
-                        definition: data,
-                        hasWeb: FS.existsSync(Path.join(obj.path, 'web'))
-                    };
-                });
+                return YAML.parseAllDocuments(raw)
+                    .map((doc) => doc.toJSON())
+                    .map((data) => {
+                        return {
+                            ymlPath: obj.ymlPath,
+                            path: obj.path,
+                            version,
+                            definition: data,
+                            hasWeb: FS.existsSync(Path.join(obj.path, 'web')),
+                        };
+                    });
             });
 
         let definitions = [];
@@ -149,14 +169,16 @@ class ClusterConfiguration {
             definitions = definitions.concat(list);
         });
 
-        return definitions
-            .filter((out) => {
-                if (kindFilter) {
-                    return out.definition.kind && kindFilter.indexOf(out.definition.kind.toLowerCase()) > -1;
-                }
+        return definitions.filter((out) => {
+            if (kindFilter) {
+                return (
+                    out.definition.kind &&
+                    kindFilter.indexOf(out.definition.kind.toLowerCase()) > -1
+                );
+            }
 
-                return !!out.definition.kind;
-            });
+            return !!out.definition.kind;
+        });
     }
 
     getClusterConfigFile() {
@@ -181,11 +203,17 @@ class ClusterConfiguration {
         }
 
         if (!this._clusterConfig.cluster.port) {
-            this._clusterConfig.cluster.port = KAPETA_CLUSTER_SERVICE_DEFAULT_PORT;
+            this._clusterConfig.cluster.port =
+                KAPETA_CLUSTER_SERVICE_DEFAULT_PORT;
         }
 
         if (!this._clusterConfig.cluster.host) {
-            this._clusterConfig.cluster.host = KAPETA_CLUSTER_SERVICE_DEFAULT_HOST;
+            this._clusterConfig.cluster.host =
+                KAPETA_CLUSTER_SERVICE_DEFAULT_HOST;
+        }
+
+        if (!this._clusterConfig.docker) {
+            this._clusterConfig.docker = {};
         }
 
         console.log('Read cluster config from file: %s', CLUSTER_CONFIG_FILE);
