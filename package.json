@@ -22,6 +22,10 @@
     "glob": "^7.1.6",
     "yaml": "1.6.0"
   },
+  "prettier": {
+    "tabWidth": 4,
+    "singleQuote": true
+  },
   "release": {
     "plugins": [
         "@semantic-release/commit-analyzer",
