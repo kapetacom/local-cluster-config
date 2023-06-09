@@ -1,10 +1,10 @@
 # node-cluster-config
-Node library for getting cluster configuration
 
+Node library for getting cluster configuration
 
 ## Example
 
-````javascript
+```javascript
 const request = require('request');
 const ClusterConfiguration = require('@kapeta/local-cluster-config');
 
@@ -19,5 +19,4 @@ request(clusterAddress + '/assets', (err, response, body) => {
 
     console.log('Received assets\n%s', JSON.stringify(JSON.parse(body), null, 2));
 });
-
-````
+```
