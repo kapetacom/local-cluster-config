@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/kapetacom/local-cluster-config/compare/v0.2.0...v0.2.1) (2023-06-09)
+
+
+### Bug Fixes
+
+* Add npm ignore and ensure we build ([17dd553](https://github.com/kapetacom/local-cluster-config/commit/17dd5531e4afc31d3f03fc1f3784013c99c30af0))
+
 # [0.2.0](https://github.com/kapetacom/local-cluster-config/compare/v0.1.0...v0.2.0) (2023-06-09)
 
 
