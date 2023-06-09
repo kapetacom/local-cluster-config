@@ -39,7 +39,7 @@
     "homepage": "https://github.com/kapetacom/local-cluster-config#readme",
     "dependencies": {
         "glob": "^7.1.6",
-        "yaml": "2.3.1"
+        "yaml": "^2.3.1"
     },
     "prettier": "@kapeta/prettier-config",
     "release": {
