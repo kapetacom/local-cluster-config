@@ -242,5 +242,3 @@ export class ClusterConfiguration {
         return `http://${host}:${clusterPort}`;
     }
 }
-
-module.exports = ClusterConfiguration;
