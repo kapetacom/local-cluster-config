@@ -1,3 +1,10 @@
+## [0.2.3](https://github.com/kapetacom/local-cluster-config/compare/v0.2.2...v0.2.3) (2023-06-09)
+
+
+### Bug Fixes
+
+* Exports were off ([f03f6f5](https://github.com/kapetacom/local-cluster-config/commit/f03f6f51aabc63fe65e1a2e27aff3da52ca93400))
+
 ## [0.2.2](https://github.com/kapetacom/local-cluster-config/compare/v0.2.1...v0.2.2) (2023-06-09)
 
 
