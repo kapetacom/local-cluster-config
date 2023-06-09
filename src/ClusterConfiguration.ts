@@ -1,8 +1,8 @@
-const OS = require('os');
-const Path = require('path');
-const FS = require('fs');
-const YAML = require('yaml');
-const Glob = require('glob');
+import OS from 'os';
+import Path from 'path';
+import FS from 'fs';
+import YAML from 'yaml';
+import Glob from 'glob';
 
 const KAPETA_CLUSTER_SERVICE_CONFIG_FILE = 'cluster-service.yml';
 
@@ -10,13 +10,9 @@ const KAPETA_CLUSTER_SERVICE_DEFAULT_PORT = '35100';
 
 const KAPETA_CLUSTER_SERVICE_DEFAULT_HOST = '127.0.0.1'; //Be specific about IPv4
 
-const KAPETA_DIR =
-    process?.env?.KAPETA_HOME ?? Path.join(OS.homedir(), '.kapeta');
+const KAPETA_DIR = process?.env?.KAPETA_HOME ?? Path.join(OS.homedir(), '.kapeta');
 
-const CLUSTER_CONFIG_FILE = Path.join(
-    KAPETA_DIR,
-    KAPETA_CLUSTER_SERVICE_CONFIG_FILE
-);
+const CLUSTER_CONFIG_FILE = Path.join(KAPETA_DIR, KAPETA_CLUSTER_SERVICE_CONFIG_FILE);
 
 const REPOSITORY_DIR = Path.join(KAPETA_DIR, 'repository');
 
@@ -34,32 +30,55 @@ const PROVIDER_TYPES = [
     'core/deployment-target',
 ];
 
-class ClusterConfiguration {
-    constructor() {
-        this._clusterConfig = null;
-    }
+export type DockerConfig = { socketPath: string } | { protocol?: string; host?: string; port?: number };
+
+export interface Definition {
+    kind: string;
+    metadata: {
+        name: string;
+        [key: string]: any;
+    };
+    spec?: any;
+}
+export interface DefinitionInfo {
+    ymlPath: string;
+    path: string;
+    version: string;
+    definition: Definition;
+    hasWeb: boolean;
+}
+
+export interface ClusterConfig {
+    cluster?: {
+        host?: string;
+        port?: string;
+        [key: string]: any;
+    };
+    [key: string]: any;
+}
+
+export class ClusterConfiguration {
+    private _clusterConfig?: ClusterConfig;
 
     getClusterServicePort() {
         if (process?.env?.KAPETA_LOCAL_CLUSTER_PORT) {
             return process.env.KAPETA_LOCAL_CLUSTER_PORT;
         }
-        return this.getClusterConfig().cluster.port;
+        return this.getClusterConfig().cluster!.port!;
     }
 
     getClusterServiceHost() {
         if (process?.env?.KAPETA_LOCAL_CLUSTER_HOST) {
             return process.env.KAPETA_LOCAL_CLUSTER_HOST;
         }
-        return this.getClusterConfig().cluster.host;
+        return this.getClusterConfig().cluster!.host!;
     }
 
     /**
      * User configured docker connection information
-     *
-     * @returns {{socketPath: string} | {protocol?: string, host?: string, port?: number}}
      */
-    getDockerConfig() {
-        return this.getClusterConfig().docker;
+    getDockerConfig(): DockerConfig {
+        return this.getClusterConfig().docker as DockerConfig;
     }
 
     getKapetaBasedir() {
@@ -78,11 +97,11 @@ class ClusterConfiguration {
         return REPOSITORY_DIR;
     }
 
-    getRepositoryAssetPath(handle, name, version) {
+    getRepositoryAssetPath(handle: string, name: string, version: string) {
         return Path.join(this.getRepositoryBasedir(), handle, name, version);
     }
 
-    getRepositoryAssetInfoPath(handle, name, version) {
+    getRepositoryAssetInfoPath(handle: string, name: string, version: string) {
         const assetBase = this.getRepositoryAssetPath(handle, name, version);
         const kapetaBase = Path.join(assetBase, '.kapeta');
 
@@ -99,11 +118,14 @@ class ClusterConfiguration {
      * @param [kindFilter] {string|string[]} if provided will only return definitions of this kind
      * @return {{ymlPath:string,path:string,version:string,hasWeb:boolean,definition:{}}[]}
      */
-    getProviderDefinitions(kindFilter) {
+    getProviderDefinitions(kindFilter: string | string[]) {
+        let resolvedFilters: string[] = [];
         if (!kindFilter) {
-            kindFilter = [...PROVIDER_TYPES];
+            resolvedFilters = [...PROVIDER_TYPES];
+        } else {
+            resolvedFilters = Array.isArray(kindFilter) ? [...kindFilter] : [kindFilter];
         }
-        return this.getDefinitions(kindFilter);
+        return this.getDefinitions(resolvedFilters);
     }
 
     /**
@@ -112,24 +134,26 @@ class ClusterConfiguration {
      * @param [kindFilter] {string|string[]} if provided will only return definitions of this kind
      * @return {{ymlPath:string,path:string,version:string,hasWeb:boolean,definition:{}}[]}
      */
-    getDefinitions(kindFilter) {
+    getDefinitions(kindFilter: string | string[]) {
         if (!FS.existsSync(this.getRepositoryBasedir())) {
             return [];
         }
 
-        if (kindFilter && !Array.isArray(kindFilter)) {
-            kindFilter = [kindFilter];
-        }
+        let resolvedFilters: string[] = [];
 
         if (kindFilter) {
-            kindFilter = kindFilter.map((k) => k.toLowerCase());
+            if (Array.isArray(kindFilter)) {
+                resolvedFilters = [...kindFilter];
+            } else {
+                resolvedFilters = [kindFilter];
+            }
         }
 
-        const ymlFiles = Glob.sync('**/@(kapeta.yml)', {
-            cwd: this.getRepositoryBasedir(),
-        });
+        resolvedFilters = resolvedFilters.map((k) => k.toLowerCase());
 
-        const lists = ymlFiles
+        const ymlFiles = Glob.sync('**/@(kapeta.yml)', { cwd: this.getRepositoryBasedir() });
+
+        const lists: DefinitionInfo[][] = ymlFiles
             .map((folder) => Path.join(this.getRepositoryBasedir(), folder))
             .map((ymlPath) => {
                 return {
@@ -140,15 +164,9 @@ class ClusterConfiguration {
             .map((obj) => {
                 const raw = FS.readFileSync(obj.ymlPath).toString();
                 let version = 'local';
-                const versionInfoFile = Path.join(
-                    obj.path,
-                    '.kapeta',
-                    'version.yml'
-                );
+                const versionInfoFile = Path.join(obj.path, '.kapeta', 'version.yml');
                 if (FS.existsSync(versionInfoFile)) {
-                    version = YAML.parse(
-                        FS.readFileSync(versionInfoFile).toString()
-                    ).version;
+                    version = YAML.parse(FS.readFileSync(versionInfoFile).toString()).version;
                 }
 
                 return YAML.parseAllDocuments(raw)
@@ -158,23 +176,20 @@ class ClusterConfiguration {
                             ymlPath: obj.ymlPath,
                             path: obj.path,
                             version,
-                            definition: data,
+                            definition: data as Definition,
                             hasWeb: FS.existsSync(Path.join(obj.path, 'web')),
                         };
                     });
             });
 
-        let definitions = [];
+        let definitions: DefinitionInfo[] = [];
         lists.forEach((list) => {
             definitions = definitions.concat(list);
         });
 
         return definitions.filter((out) => {
-            if (kindFilter) {
-                return (
-                    out.definition.kind &&
-                    kindFilter.indexOf(out.definition.kind.toLowerCase()) > -1
-                );
+            if (resolvedFilters && resolvedFilters.length > 0) {
+                return out.definition.kind && resolvedFilters.indexOf(out.definition.kind.toLowerCase()) > -1;
             }
 
             return !!out.definition.kind;
@@ -190,12 +205,14 @@ class ClusterConfiguration {
             return this._clusterConfig;
         }
 
-        this._clusterConfig = {};
-
         if (FS.existsSync(CLUSTER_CONFIG_FILE)) {
             const rawYAML = FS.readFileSync(CLUSTER_CONFIG_FILE).toString();
 
             this._clusterConfig = YAML.parse(rawYAML);
+        }
+
+        if (!this._clusterConfig) {
+            this._clusterConfig = {};
         }
 
         if (!this._clusterConfig.cluster) {
@@ -203,13 +220,11 @@ class ClusterConfiguration {
         }
 
         if (!this._clusterConfig.cluster.port) {
-            this._clusterConfig.cluster.port =
-                KAPETA_CLUSTER_SERVICE_DEFAULT_PORT;
+            this._clusterConfig.cluster.port = KAPETA_CLUSTER_SERVICE_DEFAULT_PORT;
         }
 
         if (!this._clusterConfig.cluster.host) {
-            this._clusterConfig.cluster.host =
-                KAPETA_CLUSTER_SERVICE_DEFAULT_HOST;
+            this._clusterConfig.cluster.host = KAPETA_CLUSTER_SERVICE_DEFAULT_HOST;
         }
 
         if (!this._clusterConfig.docker) {
