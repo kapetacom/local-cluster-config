@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/kapetacom/local-cluster-config/compare/v0.2.1...v0.2.2) (2023-06-09)
+
+
+### Bug Fixes
+
+* Mixed module support ([be125ba](https://github.com/kapetacom/local-cluster-config/commit/be125ba89aacba0fe3b81c81647842be79895934))
+
 ## [0.2.1](https://github.com/kapetacom/local-cluster-config/compare/v0.2.0...v0.2.1) (2023-06-09)
 
 
