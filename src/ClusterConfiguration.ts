@@ -1,8 +1,8 @@
-const OS = require('os');
-const Path = require('path');
-const FS = require('fs');
-const YAML = require('yaml');
-const Glob = require('glob');
+import OS from "os";
+import Path from "path";
+import FS from "fs";
+import YAML from "yaml";
+import Glob from "glob";
 
 const KAPETA_CLUSTER_SERVICE_CONFIG_FILE = 'cluster-service.yml';
 
@@ -34,23 +34,46 @@ const PROVIDER_TYPES = [
     'core/deployment-target',
 ];
 
-class ClusterConfiguration {
-    constructor() {
-        this._clusterConfig = null;
+export interface Definition {
+    kind: string
+    metadata: {
+        name: string
+        [key:string]:any
     }
+    spec?: any
+}
+export interface DefinitionInfo {
+    ymlPath: string
+    path: string
+    version: string
+    definition: Definition,
+    hasWeb: boolean
+}
+
+export interface ClusterConfig {
+    cluster?: {
+        host?: string;
+        port?: string;
+        [key:string]:any;
+    },
+    [key:string]:any;
+}
+
+export class ClusterConfiguration {
+    private _clusterConfig?: ClusterConfig;
 
     getClusterServicePort() {
         if (process?.env?.KAPETA_LOCAL_CLUSTER_PORT) {
             return process.env.KAPETA_LOCAL_CLUSTER_PORT;
         }
-        return this.getClusterConfig().cluster.port;
+        return this.getClusterConfig().cluster!.port!;
     }
 
     getClusterServiceHost() {
         if (process?.env?.KAPETA_LOCAL_CLUSTER_HOST) {
             return process.env.KAPETA_LOCAL_CLUSTER_HOST;
         }
-        return this.getClusterConfig().cluster.host;
+        return this.getClusterConfig().cluster!.host!;
     }
 
     /**
@@ -78,11 +101,11 @@ class ClusterConfiguration {
         return REPOSITORY_DIR;
     }
 
-    getRepositoryAssetPath(handle, name, version) {
+    getRepositoryAssetPath(handle:string, name:string, version:string) {
         return Path.join(this.getRepositoryBasedir(), handle, name, version);
     }
 
-    getRepositoryAssetInfoPath(handle, name, version) {
+    getRepositoryAssetInfoPath(handle:string, name:string, version:string) {
         const assetBase = this.getRepositoryAssetPath(handle, name, version);
         const kapetaBase = Path.join(assetBase, '.kapeta');
 
@@ -99,7 +122,7 @@ class ClusterConfiguration {
      * @param [kindFilter] {string|string[]} if provided will only return definitions of this kind
      * @return {{ymlPath:string,path:string,version:string,hasWeb:boolean,definition:{}}[]}
      */
-    getProviderDefinitions(kindFilter) {
+    getProviderDefinitions(kindFilter:string|string[]) {
         if (!kindFilter) {
             kindFilter = [...PROVIDER_TYPES];
         }
@@ -112,24 +135,28 @@ class ClusterConfiguration {
      * @param [kindFilter] {string|string[]} if provided will only return definitions of this kind
      * @return {{ymlPath:string,path:string,version:string,hasWeb:boolean,definition:{}}[]}
      */
-    getDefinitions(kindFilter) {
+    getDefinitions(kindFilter:string|string[]) {
         if (!FS.existsSync(this.getRepositoryBasedir())) {
             return [];
         }
 
-        if (kindFilter && !Array.isArray(kindFilter)) {
-            kindFilter = [kindFilter];
-        }
+        let resolvedFilters:string[] = [];
 
         if (kindFilter) {
-            kindFilter = kindFilter.map((k) => k.toLowerCase());
+            if (Array.isArray(kindFilter)) {
+                resolvedFilters = [...kindFilter];
+            } else {
+                resolvedFilters = [kindFilter];
+            }
         }
 
-        const ymlFiles = Glob.sync('**/@(kapeta.yml)', {
-            cwd: this.getRepositoryBasedir(),
-        });
 
-        const lists = ymlFiles
+        resolvedFilters = resolvedFilters.map(k => k.toLowerCase());
+
+        const ymlFiles = Glob.sync('**/@(kapeta.yml)', {cwd: this.getRepositoryBasedir()});
+
+
+        const lists:DefinitionInfo[][] = ymlFiles
             .map((folder) => Path.join(this.getRepositoryBasedir(), folder))
             .map((ymlPath) => {
                 return {
@@ -151,31 +178,31 @@ class ClusterConfiguration {
                     ).version;
                 }
 
+
                 return YAML.parseAllDocuments(raw)
                     .map((doc) => doc.toJSON())
                     .map((data) => {
-                        return {
-                            ymlPath: obj.ymlPath,
-                            path: obj.path,
-                            version,
-                            definition: data,
-                            hasWeb: FS.existsSync(Path.join(obj.path, 'web')),
-                        };
-                    });
+                    return {
+                        ymlPath: obj.ymlPath,
+                        path: obj.path,
+                        version,
+                        definition: data as Definition,
+                        hasWeb: FS.existsSync(Path.join(obj.path, 'web'))
+                    };
+                });
             });
 
-        let definitions = [];
+        let definitions:DefinitionInfo[] = [];
         lists.forEach((list) => {
             definitions = definitions.concat(list);
         });
 
-        return definitions.filter((out) => {
-            if (kindFilter) {
-                return (
-                    out.definition.kind &&
-                    kindFilter.indexOf(out.definition.kind.toLowerCase()) > -1
-                );
-            }
+
+        return definitions
+            .filter((out) => {
+                if (resolvedFilters && resolvedFilters.length > 0) {
+                    return out.definition.kind && resolvedFilters.indexOf(out.definition.kind.toLowerCase()) > -1;
+                }
 
             return !!out.definition.kind;
         });
@@ -190,12 +217,14 @@ class ClusterConfiguration {
             return this._clusterConfig;
         }
 
-        this._clusterConfig = {};
-
         if (FS.existsSync(CLUSTER_CONFIG_FILE)) {
             const rawYAML = FS.readFileSync(CLUSTER_CONFIG_FILE).toString();
 
             this._clusterConfig = YAML.parse(rawYAML);
+        }
+
+        if (!this._clusterConfig) {
+            this._clusterConfig = {};
         }
 
         if (!this._clusterConfig.cluster) {
@@ -218,7 +247,7 @@ class ClusterConfiguration {
 
         console.log('Read cluster config from file: %s', CLUSTER_CONFIG_FILE);
 
-        return this._clusterConfig;
+        return this._clusterConfig!;
     }
 
     getClusterServiceAddress() {
