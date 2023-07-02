@@ -1,3 +1,10 @@
+## [0.2.4](https://github.com/kapetacom/local-cluster-config/compare/v0.2.3...v0.2.4) (2023-07-02)
+
+
+### Bug Fixes
+
+* Make kind filters optional ([00d8fd8](https://github.com/kapetacom/local-cluster-config/commit/00d8fd82bb4f24a99435a87ea96a37eb6d11d14d))
+
 ## [0.2.3](https://github.com/kapetacom/local-cluster-config/compare/v0.2.2...v0.2.3) (2023-06-09)
 
 
