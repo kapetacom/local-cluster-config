@@ -118,7 +118,7 @@ export class ClusterConfiguration {
      * @param [kindFilter] {string|string[]} if provided will only return definitions of this kind
      * @return {{ymlPath:string,path:string,version:string,hasWeb:boolean,definition:{}}[]}
      */
-    getProviderDefinitions(kindFilter: string | string[]) {
+    getProviderDefinitions(kindFilter?: string | string[]) {
         let resolvedFilters: string[] = [];
         if (!kindFilter) {
             resolvedFilters = [...PROVIDER_TYPES];
@@ -134,7 +134,7 @@ export class ClusterConfiguration {
      * @param [kindFilter] {string|string[]} if provided will only return definitions of this kind
      * @return {{ymlPath:string,path:string,version:string,hasWeb:boolean,definition:{}}[]}
      */
-    getDefinitions(kindFilter: string | string[]) {
+    getDefinitions(kindFilter?: string | string[]) {
         if (!FS.existsSync(this.getRepositoryBasedir())) {
             return [];
         }
