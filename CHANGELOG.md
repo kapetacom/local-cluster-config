@@ -1,3 +1,10 @@
+## [0.2.5](https://github.com/kapetacom/local-cluster-config/compare/v0.2.4...v0.2.5) (2023-08-05)
+
+
+### Bug Fixes
+
+* Added space for remote service base urls ([#4](https://github.com/kapetacom/local-cluster-config/issues/4)) ([2fb8a26](https://github.com/kapetacom/local-cluster-config/commit/2fb8a264ca998bda53262e36e917be30e41b4f5f))
+
 ## [0.2.4](https://github.com/kapetacom/local-cluster-config/compare/v0.2.3...v0.2.4) (2023-07-02)
 
 
