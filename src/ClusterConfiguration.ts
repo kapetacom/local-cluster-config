@@ -32,6 +32,8 @@ const PROVIDER_TYPES = [
 
 export type DockerConfig = { socketPath: string } | { protocol?: string; host?: string; port?: number };
 
+export type RemoteServices = { [key: string]: string };
+
 export interface Definition {
     kind: string;
     metadata: {
@@ -79,6 +81,19 @@ export class ClusterConfiguration {
      */
     getDockerConfig(): DockerConfig {
         return this.getClusterConfig().docker as DockerConfig;
+    }
+
+    getRemoteServices(): RemoteServices {
+        let remoteServices = this.getClusterConfig().remoteServices;
+        if (!remoteServices) {
+            remoteServices = {};
+            this.getClusterConfig().remoteServices = remoteServices;
+        }
+        return this.getClusterConfig().remoteServices as RemoteServices;
+    }
+
+    getRemoteService(name: string, defaultValue?:string) {
+        return this.getRemoteServices()[name] ?? defaultValue;
     }
 
     getKapetaBasedir() {
