@@ -181,7 +181,17 @@ export class ClusterConfiguration {
                 let version = 'local';
                 const versionInfoFile = Path.join(obj.path, '.kapeta', 'version.yml');
                 if (FS.existsSync(versionInfoFile)) {
-                    version = YAML.parse(FS.readFileSync(versionInfoFile).toString()).version;
+                    try {
+                        const versionInfo = YAML.parse(FS.readFileSync(versionInfoFile).toString());
+                        if (!versionInfo?.version) {
+                            console.warn(`Invalid version file ${versionInfoFile}`);
+                            return [];
+                        }
+                        version = versionInfo.version;
+                    } catch (e:any) {
+                        console.warn(`Invalid version file ${versionInfoFile}`, e);
+                        return [];
+                    }
                 }
 
                 return YAML.parseAllDocuments(raw)
