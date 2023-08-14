@@ -1,3 +1,10 @@
+## [0.2.6](https://github.com/kapetacom/local-cluster-config/compare/v0.2.5...v0.2.6) (2023-08-14)
+
+
+### Bug Fixes
+
+* Handle invalid definitions gracefully ([#5](https://github.com/kapetacom/local-cluster-config/issues/5)) ([e47e0a8](https://github.com/kapetacom/local-cluster-config/commit/e47e0a85580d6735cb6802ff72b425f1b231e3a7))
+
 ## [0.2.5](https://github.com/kapetacom/local-cluster-config/compare/v0.2.4...v0.2.5) (2023-08-05)
 
 
