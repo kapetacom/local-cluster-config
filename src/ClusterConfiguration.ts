@@ -92,7 +92,7 @@ export class ClusterConfiguration {
         return this.getClusterConfig().remoteServices as RemoteServices;
     }
 
-    getRemoteService(name: string, defaultValue?:string) {
+    getRemoteService(name: string, defaultValue?: string) {
         return this.getRemoteServices()[name] ?? defaultValue;
     }
 
@@ -177,6 +177,9 @@ export class ClusterConfiguration {
                 };
             })
             .map((obj) => {
+                if (!FS.existsSync(obj.ymlPath)) {
+                    return [];
+                }
                 const raw = FS.readFileSync(obj.ymlPath).toString();
                 let version = 'local';
                 const versionInfoFile = Path.join(obj.path, '.kapeta', 'version.yml');
@@ -188,7 +191,7 @@ export class ClusterConfiguration {
                             return [];
                         }
                         version = versionInfo.version;
-                    } catch (e:any) {
+                    } catch (e: any) {
                         console.warn(`Invalid version file ${versionInfoFile}`, e);
                         return [];
                     }
