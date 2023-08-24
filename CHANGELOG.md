@@ -1,3 +1,10 @@
+## [0.2.7](https://github.com/kapetacom/local-cluster-config/compare/v0.2.6...v0.2.7) (2023-08-24)
+
+
+### Bug Fixes
+
+* Make sure file exists before reading it ([#6](https://github.com/kapetacom/local-cluster-config/issues/6)) ([95c560c](https://github.com/kapetacom/local-cluster-config/commit/95c560cb5dfb8ac038d9e10b463cbca23082fea2))
+
 ## [0.2.6](https://github.com/kapetacom/local-cluster-config/compare/v0.2.5...v0.2.6) (2023-08-14)
 
 
