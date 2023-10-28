@@ -1,3 +1,10 @@
+## [0.2.8](https://github.com/kapetacom/local-cluster-config/compare/v0.2.7...v0.2.8) (2023-10-28)
+
+
+### Bug Fixes
+
+* Make glob pattern more specific and faster ([#7](https://github.com/kapetacom/local-cluster-config/issues/7)) ([11238bf](https://github.com/kapetacom/local-cluster-config/commit/11238bfd1f0810f3e665e6df33ef8cbee275a3fa))
+
 ## [0.2.7](https://github.com/kapetacom/local-cluster-config/compare/v0.2.6...v0.2.7) (2023-08-24)
 
 
