@@ -30,7 +30,9 @@ const PROVIDER_TYPES = [
     'core/deployment-target',
 ];
 
-export type DockerConfig = { socketPath: string } | { protocol?: string; host?: string; port?: number };
+export type DockerConfig =
+    | { socketPath: string }
+    | { protocol?: 'https' | 'http' | 'ssh'; host?: string; port?: number };
 
 export type RemoteServices = { [key: string]: string };
 
@@ -145,9 +147,6 @@ export class ClusterConfiguration {
 
     /**
      * Gets an array of all definitions along with their paths from the local repository
-     *
-     * @param [kindFilter] {string|string[]} if provided will only return definitions of this kind
-     * @return {{ymlPath:string,path:string,version:string,hasWeb:boolean,definition:{}}[]}
      */
     getDefinitions(kindFilter?: string | string[]) {
         if (!FS.existsSync(this.getRepositoryBasedir())) {
@@ -166,7 +165,10 @@ export class ClusterConfiguration {
 
         resolvedFilters = resolvedFilters.map((k) => k.toLowerCase());
 
-        const ymlFiles = Glob.sync('**/@(kapeta.yml)', { cwd: this.getRepositoryBasedir() });
+        const ymlFiles = Glob.sync('*/*/*/@(kapeta.yml)', {
+            cwd: this.getRepositoryBasedir(),
+            ignore: 'node_modules/**',
+        });
 
         const lists: DefinitionInfo[][] = ymlFiles
             .map((folder) => Path.join(this.getRepositoryBasedir(), folder))
