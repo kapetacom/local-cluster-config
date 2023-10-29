@@ -1,22 +1,7 @@
-# node-cluster-config
+# Cluster Configuration Provider
 
-Node library for getting cluster configuration
+Node library for getting local cluster configuration
 
-## Example
+## License
 
-```javascript
-const request = require('request');
-const ClusterConfiguration = require('@kapeta/local-cluster-config');
-
-//Gets the address of the cluster service - e.g. "http://localhost:30500"
-const clusterAddress = ClusterConfiguration.getClusterServiceAddress();
-
-request(clusterAddress + '/assets', (err, response, body) => {
-    if (err) {
-        console.error('Failed to get assets', err.stack);
-        return;
-    }
-
-    console.log('Received assets\n%s', JSON.stringify(JSON.parse(body), null, 2));
-});
-```
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
