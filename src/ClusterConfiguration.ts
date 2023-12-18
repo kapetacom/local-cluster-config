@@ -15,6 +15,8 @@ const KAPETA_CLUSTER_SERVICE_DEFAULT_PORT = '35100';
 
 const KAPETA_CLUSTER_SERVICE_DEFAULT_HOST = '127.0.0.1'; //Be specific about IPv4
 
+const KAPETA_CLUSTER_SERVICE_DEFAULT_ENV = 'production';
+
 const KAPETA_DIR = process?.env?.KAPETA_HOME ?? Path.join(OS.homedir(), '.kapeta');
 
 const CLUSTER_CONFIG_FILE = Path.join(KAPETA_DIR, KAPETA_CLUSTER_SERVICE_CONFIG_FILE);
@@ -88,6 +90,10 @@ export class ClusterConfiguration {
      */
     getDockerConfig(): DockerConfig {
         return this.getClusterConfig().docker as DockerConfig;
+    }
+
+    getEnvironment(): string {
+        return this.getClusterConfig().environment;
     }
 
     getRemoteServices(): RemoteServices {
@@ -264,6 +270,10 @@ export class ClusterConfiguration {
 
         if (!this._clusterConfig.docker) {
             this._clusterConfig.docker = {};
+        }
+
+        if (!this._clusterConfig.environment) {
+            this._clusterConfig.environment = KAPETA_CLUSTER_SERVICE_DEFAULT_ENV;
         }
 
         console.log('Read cluster config from file: %s', CLUSTER_CONFIG_FILE);
