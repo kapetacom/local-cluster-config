@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/kapetacom/local-cluster-config/compare/v0.2.8...v0.3.0) (2023-12-18)
+
+
+### Features
+
+* introduce cluster-config environment key ([#9](https://github.com/kapetacom/local-cluster-config/issues/9)) ([017c97c](https://github.com/kapetacom/local-cluster-config/commit/017c97ceb58c1247873501fb955bb2e7ed4c176c))
+
 ## [0.2.8](https://github.com/kapetacom/local-cluster-config/compare/v0.2.7...v0.2.8) (2023-10-28)
 
 
