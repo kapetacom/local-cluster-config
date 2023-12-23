@@ -1,3 +1,10 @@
+## [0.3.1](https://github.com/kapetacom/local-cluster-config/compare/v0.3.0...v0.3.1) (2023-12-23)
+
+
+### Bug Fixes
+
+* Add relative path getter for repo assets ([#10](https://github.com/kapetacom/local-cluster-config/issues/10)) ([2af563c](https://github.com/kapetacom/local-cluster-config/commit/2af563c673ef5c3dcf78b0fff24768d246fd4793))
+
 # [0.3.0](https://github.com/kapetacom/local-cluster-config/compare/v0.2.8...v0.3.0) (2023-12-18)
 
 
