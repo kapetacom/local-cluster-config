@@ -132,9 +132,19 @@ export class ClusterConfiguration {
     getRepositoryAssetInfoPath(handle: string, name: string, version: string) {
         const assetBase = this.getRepositoryAssetPath(handle, name, version);
         const kapetaBase = Path.join(assetBase, '.kapeta');
+        const { assetFile, versionFile } = this.getRepositoryAssetInfoRelativePath(assetBase);
 
         return {
             baseDir: kapetaBase,
+            assetFile,
+            versionFile,
+        };
+    }
+
+    getRepositoryAssetInfoRelativePath(assetBase: string) {
+        const kapetaBase = Path.join(assetBase, '.kapeta');
+
+        return {
             assetFile: Path.join(assetBase, 'kapeta.yml'),
             versionFile: Path.join(kapetaBase, 'version.yml'),
         };
