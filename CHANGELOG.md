@@ -1,3 +1,10 @@
+## [0.3.2](https://github.com/kapetacom/local-cluster-config/compare/v0.3.1...v0.3.2) (2024-01-22)
+
+
+### Bug Fixes
+
+* Expose method for resetting internal config cache ([#11](https://github.com/kapetacom/local-cluster-config/issues/11)) ([9f91840](https://github.com/kapetacom/local-cluster-config/commit/9f91840560330eddb4c02e5026fba9b8d45044c9))
+
 ## [0.3.1](https://github.com/kapetacom/local-cluster-config/compare/v0.3.0...v0.3.1) (2023-12-23)
 
 
