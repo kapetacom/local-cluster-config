@@ -201,6 +201,7 @@ export class ClusterConfiguration {
             })
             .map((obj) => {
                 if (!FS.existsSync(obj.ymlPath)) {
+                    console.warn(`Invalid definition file ${obj.ymlPath}`);
                     return [];
                 }
                 const raw = FS.readFileSync(obj.ymlPath).toString();
@@ -251,8 +252,20 @@ export class ClusterConfiguration {
         return CLUSTER_CONFIG_FILE;
     }
 
+    /**
+     * Resets the cluster config so it will be re-read from file
+     */
+    resetClusterConfig() {
+        this._clusterConfig = undefined;
+    }
+
+    /**
+     * Gets the cluster configuration. Will cache the information after the first read.
+     *
+     * Call resetClusterConfig to force a re-read from file
+     */
     getClusterConfig() {
-        if (this._clusterConfig != null) {
+        if (this._clusterConfig) {
             return this._clusterConfig;
         }
 
