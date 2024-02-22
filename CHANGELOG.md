@@ -1,3 +1,10 @@
+# [0.4.0](https://github.com/kapetacom/local-cluster-config/compare/v0.3.2...v0.4.0) (2024-02-22)
+
+
+### Features
+
+* Add support for block-type-executable ([f279e49](https://github.com/kapetacom/local-cluster-config/commit/f279e49dcc39c31fc1a74b0eef81b311fbfb4bb0))
+
 ## [0.3.2](https://github.com/kapetacom/local-cluster-config/compare/v0.3.1...v0.3.2) (2024-01-22)
 
 
