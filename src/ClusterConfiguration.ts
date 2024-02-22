@@ -30,6 +30,7 @@ const AUTH_TOKEN_PATH = process?.env?.KAPETA_CREDENTIALS
 const PROVIDER_TYPES = [
     'core/block-type',
     'core/block-type-operator',
+    'core/block-type-executable',
     'core/resource-type-extension',
     'core/resource-type-internal',
     'core/resource-type-operator',
