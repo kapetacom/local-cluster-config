@@ -224,7 +224,23 @@ export class ClusterConfiguration {
 
                 return YAML.parseAllDocuments(raw)
                     .map((doc) => doc.toJSON())
-                    .map((data) => {
+                    .map((data, i, documents) => {
+                        if (!data || !data.kind || !data.metadata || !data.metadata.name) {
+                            // TODO: add a real validation framework
+                            if (documents.length > 1) {
+                                console.warn(
+                                    `YAML document #${i + 1} in ${
+                                        obj.ymlPath
+                                    } was skipped: Invalid data, missing one or more required fields.`
+                                );
+                            } else {
+                                console.warn(
+                                    `File ${obj.ymlPath} was skipped: Invalid data, missing one or more required fields.`
+                                );
+                            }
+                            return false;
+                        }
+
                         return {
                             ymlPath: obj.ymlPath,
                             path: obj.path,
@@ -232,7 +248,8 @@ export class ClusterConfiguration {
                             definition: data as Definition,
                             hasWeb: FS.existsSync(Path.join(obj.path, 'web')),
                         };
-                    });
+                    })
+                    .filter(Boolean) as DefinitionInfo[];
             });
 
         let definitions: DefinitionInfo[] = [];
