@@ -285,7 +285,6 @@ export class ClusterConfiguration {
 
     getDefinitionErrors() {
         const { errors } = this.getDefinitionFiles();
-        console.log({ errors });
         return errors;
     }
 
