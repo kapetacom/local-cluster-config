@@ -199,7 +199,7 @@ export class ClusterConfiguration {
                 if (!FS.existsSync(obj.ymlPath)) {
                     console.warn(`Invalid definition file ${obj.ymlPath}`);
                     this._errors.push({
-                        message: `Invalid definition file ${obj.ymlPath}`,
+                        message: `Invalid definition file`,
                         definition: {
                             ymlPath: obj.ymlPath,
                             path: obj.path,
@@ -243,8 +243,8 @@ export class ClusterConfiguration {
             const data = document.definition;
             if (!data || !data.kind || !data.metadata || !data.metadata.name) {
                 // TODO: add a real validation framework
-                return `YAML document #${documentIndex + 1} in ${
-                    document.ymlPath
+                return `YAML document #${
+                    documentIndex + 1
                 } was skipped: Invalid data, missing one or more required fields.`;
             }
 
