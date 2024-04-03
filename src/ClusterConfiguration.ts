@@ -167,25 +167,17 @@ export class ClusterConfiguration {
         return this.getDefinitions(resolvedFilters);
     }
 
-    /**
-     * Gets an array of all definitions along with their paths from the local repository
-     */
-    getDefinitions(kindFilter?: string | string[]) {
+    private getDefinitionFiles() {
+        const out = {
+            valid: [] as DefinitionInfo[],
+            errors: [] as {
+                error: string;
+                definition: Partial<DefinitionInfo>;
+            }[],
+        };
         if (!FS.existsSync(this.getRepositoryBasedir())) {
-            return [];
+            return out;
         }
-
-        let resolvedFilters: string[] = [];
-
-        if (kindFilter) {
-            if (Array.isArray(kindFilter)) {
-                resolvedFilters = [...kindFilter];
-            } else {
-                resolvedFilters = [kindFilter];
-            }
-        }
-
-        resolvedFilters = resolvedFilters.map((k) => k.toLowerCase());
 
         const ymlFiles = Glob.sync('*/*/*/@(kapeta.yml)', {
             cwd: this.getRepositoryBasedir(),
@@ -224,23 +216,7 @@ export class ClusterConfiguration {
 
                 return YAML.parseAllDocuments(raw)
                     .map((doc) => doc.toJSON())
-                    .map((data, i, documents) => {
-                        if (!data || !data.kind || !data.metadata || !data.metadata.name) {
-                            // TODO: add a real validation framework
-                            if (documents.length > 1) {
-                                console.warn(
-                                    `YAML document #${i + 1} in ${
-                                        obj.ymlPath
-                                    } was skipped: Invalid data, missing one or more required fields.`
-                                );
-                            } else {
-                                console.warn(
-                                    `File ${obj.ymlPath} was skipped: Invalid data, missing one or more required fields.`
-                                );
-                            }
-                            return false;
-                        }
-
+                    .map((data) => {
                         return {
                             ymlPath: obj.ymlPath,
                             path: obj.path,
@@ -248,22 +224,69 @@ export class ClusterConfiguration {
                             definition: data as Definition,
                             hasWeb: FS.existsSync(Path.join(obj.path, 'web')),
                         };
-                    })
-                    .filter(Boolean) as DefinitionInfo[];
+                    });
             });
 
-        let definitions: DefinitionInfo[] = [];
-        lists.forEach((list) => {
-            definitions = definitions.concat(list);
+        const validate = (document: DefinitionInfo, documentIndex: number): string | null => {
+            const data = document.definition;
+            if (!data || !data.kind || !data.metadata || !data.metadata.name) {
+                // TODO: add a real validation framework
+
+                return `YAML document #${documentIndex + 1} in ${
+                    document.ymlPath
+                } was skipped: Invalid data, missing one or more required fields.`;
+            }
+
+            return null;
+        };
+
+        lists.forEach((documentList) => {
+            documentList.forEach((definition, i) => {
+                const error = validate(definition, i);
+                if (error) {
+                    out.errors.push({
+                        error,
+                        definition,
+                    });
+                    return;
+                }
+                out.valid.push(definition);
+            });
         });
 
-        return definitions.filter((out) => {
+        return out;
+    }
+
+    /**
+     * Gets an array of all definitions along with their paths from the local repository
+     */
+    getDefinitions(kindFilter?: string | string[]) {
+        let resolvedFilters: string[] = [];
+        const { valid } = this.getDefinitionFiles();
+
+        if (kindFilter) {
+            if (Array.isArray(kindFilter)) {
+                resolvedFilters = [...kindFilter];
+            } else {
+                resolvedFilters = [kindFilter];
+            }
+        }
+
+        resolvedFilters = resolvedFilters.map((k) => k.toLowerCase());
+
+        return valid.filter((out) => {
             if (resolvedFilters && resolvedFilters.length > 0) {
                 return out.definition.kind && resolvedFilters.indexOf(out.definition.kind.toLowerCase()) > -1;
             }
 
             return !!out.definition.kind;
         });
+    }
+
+    getDefinitionErrors() {
+        const { errors } = this.getDefinitionFiles();
+        console.log({ errors });
+        return errors;
     }
 
     getClusterConfigFile() {
