@@ -60,6 +60,11 @@ export interface DefinitionInfo {
     hasWeb: boolean;
 }
 
+export interface DefinitionError {
+    message: string;
+    definition: Omit<DefinitionInfo, 'definition'> & { definition?: Partial<Definition> };
+}
+
 export interface ClusterConfig {
     cluster?: {
         host?: string;
@@ -71,10 +76,7 @@ export interface ClusterConfig {
 
 export class ClusterConfiguration {
     private _clusterConfig?: ClusterConfig;
-    private _errors: {
-        message: string;
-        definition: Partial<DefinitionInfo>;
-    }[] = [];
+    private _errors: DefinitionError[] = [];
 
     getClusterServicePort() {
         if (process?.env?.KAPETA_LOCAL_CLUSTER_PORT) {
@@ -172,15 +174,12 @@ export class ClusterConfiguration {
     }
 
     private processDefinitionFiles() {
-        const out = {
-            valid: [] as DefinitionInfo[],
-            errors: [] as {
-                message: string;
-                definition: Partial<DefinitionInfo>;
-            }[],
-        };
+        const definitions: DefinitionInfo[] = [];
+
+        this._errors = [];
+
         if (!FS.existsSync(this.getRepositoryBasedir())) {
-            return out;
+            return definitions;
         }
 
         const ymlFiles = Glob.sync('*/*/*/@(kapeta.yml)', {
@@ -199,6 +198,15 @@ export class ClusterConfiguration {
             .map((obj) => {
                 if (!FS.existsSync(obj.ymlPath)) {
                     console.warn(`Invalid definition file ${obj.ymlPath}`);
+                    this._errors.push({
+                        message: `Invalid definition file ${obj.ymlPath}`,
+                        definition: {
+                            ymlPath: obj.ymlPath,
+                            path: obj.path,
+                            version: 'local',
+                            hasWeb: false,
+                        },
+                    });
                     return [];
                 }
                 const raw = FS.readFileSync(obj.ymlPath).toString();
@@ -235,7 +243,6 @@ export class ClusterConfiguration {
             const data = document.definition;
             if (!data || !data.kind || !data.metadata || !data.metadata.name) {
                 // TODO: add a real validation framework
-
                 return `YAML document #${documentIndex + 1} in ${
                     document.ymlPath
                 } was skipped: Invalid data, missing one or more required fields.`;
@@ -248,17 +255,17 @@ export class ClusterConfiguration {
             documentList.forEach((definition, i) => {
                 const error = validate(definition, i);
                 if (error) {
-                    out.errors.push({
+                    this._errors.push({
                         message: error,
                         definition,
                     });
                     return;
                 }
-                out.valid.push(definition);
+                definitions.push(definition);
             });
         });
 
-        return out;
+        return definitions;
     }
 
     /**
@@ -266,8 +273,7 @@ export class ClusterConfiguration {
      */
     getDefinitions(kindFilter?: string | string[]) {
         let resolvedFilters: string[] = [];
-        const { valid, errors } = this.processDefinitionFiles();
-        this._errors = errors;
+        const valid = this.processDefinitionFiles();
 
         if (kindFilter) {
             if (Array.isArray(kindFilter)) {
