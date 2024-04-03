@@ -71,6 +71,10 @@ export interface ClusterConfig {
 
 export class ClusterConfiguration {
     private _clusterConfig?: ClusterConfig;
+    private _errors: {
+        message: string;
+        definition: Partial<DefinitionInfo>;
+    }[] = [];
 
     getClusterServicePort() {
         if (process?.env?.KAPETA_LOCAL_CLUSTER_PORT) {
@@ -167,11 +171,11 @@ export class ClusterConfiguration {
         return this.getDefinitions(resolvedFilters);
     }
 
-    private getDefinitionFiles() {
+    private processDefinitionFiles() {
         const out = {
             valid: [] as DefinitionInfo[],
             errors: [] as {
-                error: string;
+                message: string;
                 definition: Partial<DefinitionInfo>;
             }[],
         };
@@ -245,7 +249,7 @@ export class ClusterConfiguration {
                 const error = validate(definition, i);
                 if (error) {
                     out.errors.push({
-                        error,
+                        message: error,
                         definition,
                     });
                     return;
@@ -262,7 +266,8 @@ export class ClusterConfiguration {
      */
     getDefinitions(kindFilter?: string | string[]) {
         let resolvedFilters: string[] = [];
-        const { valid } = this.getDefinitionFiles();
+        const { valid, errors } = this.processDefinitionFiles();
+        this._errors = errors;
 
         if (kindFilter) {
             if (Array.isArray(kindFilter)) {
@@ -284,8 +289,7 @@ export class ClusterConfiguration {
     }
 
     getDefinitionErrors() {
-        const { errors } = this.getDefinitionFiles();
-        return errors;
+        return this._errors;
     }
 
     getClusterConfigFile() {
