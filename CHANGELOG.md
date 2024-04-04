@@ -1,3 +1,10 @@
+## [0.4.1](https://github.com/kapetacom/local-cluster-config/compare/v0.4.0...v0.4.1) (2024-04-04)
+
+
+### Bug Fixes
+
+* skip kapeta files w/o kind or name and add errors API [CORE-2577] ([#13](https://github.com/kapetacom/local-cluster-config/issues/13)) ([6aea058](https://github.com/kapetacom/local-cluster-config/commit/6aea0585bff367ed679e0f74abe2d28169840e94))
+
 # [0.4.0](https://github.com/kapetacom/local-cluster-config/compare/v0.3.2...v0.4.0) (2024-02-22)
 
 
