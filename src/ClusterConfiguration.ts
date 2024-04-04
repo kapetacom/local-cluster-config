@@ -60,6 +60,11 @@ export interface DefinitionInfo {
     hasWeb: boolean;
 }
 
+export interface DefinitionError {
+    message: string;
+    definition: Omit<DefinitionInfo, 'definition'> & { definition?: Partial<Definition> };
+}
+
 export interface ClusterConfig {
     cluster?: {
         host?: string;
@@ -71,6 +76,7 @@ export interface ClusterConfig {
 
 export class ClusterConfiguration {
     private _clusterConfig?: ClusterConfig;
+    private _errors: DefinitionError[] = [];
 
     getClusterServicePort() {
         if (process?.env?.KAPETA_LOCAL_CLUSTER_PORT) {
@@ -167,25 +173,14 @@ export class ClusterConfiguration {
         return this.getDefinitions(resolvedFilters);
     }
 
-    /**
-     * Gets an array of all definitions along with their paths from the local repository
-     */
-    getDefinitions(kindFilter?: string | string[]) {
+    private processDefinitionFiles() {
+        const definitions: DefinitionInfo[] = [];
+
+        this._errors = [];
+
         if (!FS.existsSync(this.getRepositoryBasedir())) {
-            return [];
+            return definitions;
         }
-
-        let resolvedFilters: string[] = [];
-
-        if (kindFilter) {
-            if (Array.isArray(kindFilter)) {
-                resolvedFilters = [...kindFilter];
-            } else {
-                resolvedFilters = [kindFilter];
-            }
-        }
-
-        resolvedFilters = resolvedFilters.map((k) => k.toLowerCase());
 
         const ymlFiles = Glob.sync('*/*/*/@(kapeta.yml)', {
             cwd: this.getRepositoryBasedir(),
@@ -203,6 +198,15 @@ export class ClusterConfiguration {
             .map((obj) => {
                 if (!FS.existsSync(obj.ymlPath)) {
                     console.warn(`Invalid definition file ${obj.ymlPath}`);
+                    this._errors.push({
+                        message: `Invalid definition file`,
+                        definition: {
+                            ymlPath: obj.ymlPath,
+                            path: obj.path,
+                            version: 'local',
+                            hasWeb: false,
+                        },
+                    });
                     return [];
                 }
                 const raw = FS.readFileSync(obj.ymlPath).toString();
@@ -235,18 +239,63 @@ export class ClusterConfiguration {
                     });
             });
 
-        let definitions: DefinitionInfo[] = [];
-        lists.forEach((list) => {
-            definitions = definitions.concat(list);
+        const validate = (document: DefinitionInfo, documentIndex: number): string | null => {
+            const data = document.definition;
+            if (!data || !data.kind || !data.metadata || !data.metadata.name) {
+                // TODO: add a real validation framework
+                return `YAML document #${
+                    documentIndex + 1
+                } was skipped: Invalid data, missing one or more required fields.`;
+            }
+
+            return null;
+        };
+
+        lists.forEach((documentList) => {
+            documentList.forEach((definition, i) => {
+                const error = validate(definition, i);
+                if (error) {
+                    this._errors.push({
+                        message: error,
+                        definition,
+                    });
+                    return;
+                }
+                definitions.push(definition);
+            });
         });
 
-        return definitions.filter((out) => {
+        return definitions;
+    }
+
+    /**
+     * Gets an array of all definitions along with their paths from the local repository
+     */
+    getDefinitions(kindFilter?: string | string[]) {
+        let resolvedFilters: string[] = [];
+        const valid = this.processDefinitionFiles();
+
+        if (kindFilter) {
+            if (Array.isArray(kindFilter)) {
+                resolvedFilters = [...kindFilter];
+            } else {
+                resolvedFilters = [kindFilter];
+            }
+        }
+
+        resolvedFilters = resolvedFilters.map((k) => k.toLowerCase());
+
+        return valid.filter((out) => {
             if (resolvedFilters && resolvedFilters.length > 0) {
                 return out.definition.kind && resolvedFilters.indexOf(out.definition.kind.toLowerCase()) > -1;
             }
 
             return !!out.definition.kind;
         });
+    }
+
+    getDefinitionErrors() {
+        return this._errors;
     }
 
     getClusterConfigFile() {
