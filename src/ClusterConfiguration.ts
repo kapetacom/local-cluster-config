@@ -209,7 +209,6 @@ export class ClusterConfiguration {
                     });
                     return [];
                 }
-                const raw = FS.readFileSync(obj.ymlPath).toString();
                 let version = 'local';
                 const versionInfoFile = Path.join(obj.path, '.kapeta', 'version.yml');
                 if (FS.existsSync(versionInfoFile)) {
@@ -226,17 +225,32 @@ export class ClusterConfiguration {
                     }
                 }
 
-                return YAML.parseAllDocuments(raw)
-                    .map((doc) => doc.toJSON())
-                    .map((data) => {
-                        return {
+                try {
+                    const raw = FS.readFileSync(obj.ymlPath).toString();
+                    return YAML.parseAllDocuments(raw)
+                        .map((doc) => doc.toJSON())
+                        .map((data) => {
+                            return {
+                                ymlPath: obj.ymlPath,
+                                path: obj.path,
+                                version,
+                                definition: data as Definition,
+                                hasWeb: FS.existsSync(Path.join(obj.path, 'web')),
+                            };
+                        });
+                } catch (e: any) {
+                    console.warn(`Error reading yaml file ${obj.ymlPath}`, e);
+                    this._errors.push({
+                        message: `Error reading yaml file: ${e.message as string}`,
+                        definition: {
                             ymlPath: obj.ymlPath,
                             path: obj.path,
-                            version,
-                            definition: data as Definition,
-                            hasWeb: FS.existsSync(Path.join(obj.path, 'web')),
-                        };
+                            version: 'local',
+                            hasWeb: false,
+                        },
                     });
+                    return [];
+                }
             });
 
         const validate = (document: DefinitionInfo, documentIndex: number): string | null => {
