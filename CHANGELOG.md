@@ -1,3 +1,10 @@
+## [0.4.2](https://github.com/kapetacom/local-cluster-config/compare/v0.4.1...v0.4.2) (2024-04-16)
+
+
+### Bug Fixes
+
+* better missing file handling [CORE-2685] ([#14](https://github.com/kapetacom/local-cluster-config/issues/14)) ([225a483](https://github.com/kapetacom/local-cluster-config/commit/225a4832e725a9981f26e3cff978068c4e8518e8))
+
 ## [0.4.1](https://github.com/kapetacom/local-cluster-config/compare/v0.4.0...v0.4.1) (2024-04-04)
 
 
